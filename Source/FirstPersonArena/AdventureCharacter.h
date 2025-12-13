@@ -1,8 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h" 
@@ -27,15 +26,21 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	TObjectPtr<UInputMappingContext> FirstPersonContext;
+	UInputMappingContext* FirstPersonContext;
 
+	// Move Input Actions
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	TObjectPtr<UInputAction> MoveAction;
+	UInputAction* MoveAction;
 
+	// Jump Input Actions
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	TObjectPtr<UInputAction> JumpAction;
+	UInputAction* JumpAction;
 
-public:	
+	// Look Input Actions
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* LookAction;
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -45,4 +50,27 @@ public:
 	// Handles 2D Movement Input
 	UFUNCTION()
 	void Move(const FInputActionValue& Value);
+
+	// Handles Look Input
+	UFUNCTION()
+	void Look(const FInputActionValue& Value);
+
+	// First Person camera
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	UCameraComponent* FirstPersonCameraComponent;
+
+	UPROPERTY(EditAnywhere, Category = Camera)
+	FVector FirstPersonCameraOffset = FVector(2.8f, 5.9f, 0.0f);
+
+	// First-person camera field of view
+	UPROPERTY(EditAnywhere, Category = Camera)
+	float FirstPersonFieldOfView = 70.0f;
+
+	// First-person camera view scale
+	UPROPERTY(EditAnywhere, Category = Camera)
+	float FirstPersonViewScale = 0.6f;
+
+	// First-person mesh, visible only to the owning player
+	UPROPERTY(VisibleAnywhere, Category = Mesh)
+	USkeletalMeshComponent* FirstPersonMeshComponent;
 };
