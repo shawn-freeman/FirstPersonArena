@@ -6,18 +6,18 @@
 // Sets default values
 AAdventureCharacter::AAdventureCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Create a first person camera component
+	// Create a first-person camera component
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	check(FirstPersonCameraComponent != nullptr);
 
-	// Create a first person mesh component for the owning player
+	// Create a first-person mesh component for the owning player
 	FirstPersonMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
 	check(FirstPersonMeshComponent != nullptr);
 
-	// Attach the first person mesh to the skeletal mesh
+	// Attach the first-person mesh to the skeletal mesh
 	FirstPersonMeshComponent->SetupAttachment(GetMesh());
 
 	// The first-person mesh is included in First Person rendering (use FirstPersonFieldofView and FirstPersonScale on this mesh) 
@@ -29,7 +29,7 @@ AAdventureCharacter::AAdventureCharacter()
 	// The owning player doesn't see the regular (third-person) body mesh, but it casts a shadow
 	GetMesh()->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::WorldSpaceRepresentation;
 
-	// Set the first person mesh to not collide with other objects
+	// Set the first-person mesh to not collide with other objects
 	FirstPersonMeshComponent->SetCollisionProfileName(FName("NoCollision"));
 
 	FirstPersonCameraComponent->SetupAttachment(FirstPersonMeshComponent, FName("head"));
@@ -52,13 +52,22 @@ void AAdventureCharacter::BeginPlay()
 
 	check(GEngine != nullptr);
 
-	// Only the owning player sees the first person mesh.
-FirstPersonMeshComponent->SetOnlyOwnerSee(true);
+	// Only the owning player sees the first person mesh
+	FirstPersonMeshComponent->SetOnlyOwnerSee(true);
 
-// Set the animations on the first person mesh.
-FirstPersonMeshComponent->SetAnimInstanceClass(FirstPersonDefaultAnim->GeneratedClass);
-	
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller)) {
+	// Set the animations on the first person mesh.
+	FirstPersonMeshComponent->SetAnimInstanceClass(FirstPersonDefaultAnim->GeneratedClass);
+
+	// The owning player doesn't see the regular (third-person) body mesh
+	GetMesh()->SetOwnerNoSee(true);
+
+	// Position the camera slightly above the eyes.
+	FirstPersonCameraComponent->SetRelativeLocation(FVector(2.8f, 5.9f, 0.0f));
+
+	// Get the player controller for this character
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		// Get the enhanced input local player subsystem and add a new input mapping context to it
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(FirstPersonContext, 0);
