@@ -37,11 +37,11 @@ struct FItemData : public FTableRowBase
 	FName ID;
 
 	UPROPERTY(EditAnywhere, Category = "Item Data")
-	EItemType itemType;
+	EItemType ItemType;
 
 	UPROPERTY(EditAnywhere, Category = "Item Data")
 	FItemText ItemText;
 
 	UPROPERTY(EditAnywhere, Category = "Item Data")
-	UItemDefinition* ItemBase;
+	TObjectPtr<UItemDefinition> ItemBase;
 };

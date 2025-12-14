@@ -20,7 +20,7 @@ class FIRSTPERSONARENA_API UItemDefinition : public UDataAsset
 		FName ID;
 
 		UPROPERTY(EditAnywhere, Category = "Item Data")
-		EItemType itemType;
+		EItemType ItemType;
 
 		UPROPERTY(EditAnywhere, Category = "Item Data")
 		FItemText ItemText;
