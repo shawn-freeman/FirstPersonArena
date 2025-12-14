@@ -52,14 +52,9 @@ void APickupBase::InitializePickup()
 		// Retrieve the item data associated with this pickup from the Data Table
 		const FItemData* ItemDataRow = PickupDataTable->FindRow<FItemData>(PickupItemID, PickupItemID.ToString());
 
-		ReferenceItem = NewObject<UItemDefinition>(this, UItemDefinition::StaticClass());
-
-		ReferenceItem->ID = ItemDataRow->ID;
-		ReferenceItem->ItemType = ItemDataRow->ItemType;
-		ReferenceItem->ItemText = ItemDataRow->ItemText;
-		ReferenceItem->WorldMesh = ItemDataRow->ItemBase->WorldMesh;
-
 		UItemDefinition* TempItemDefinition = ItemDataRow->ItemBase.Get();
+
+		ReferenceItem = TempItemDefinition->CreateItemCopy();
 
 		// Check if the mesh is currently loaded by calling IsValid().
 		if (TempItemDefinition->WorldMesh.IsValid()) {

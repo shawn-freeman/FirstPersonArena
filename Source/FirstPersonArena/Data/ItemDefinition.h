@@ -27,4 +27,6 @@ class FIRSTPERSONARENA_API UItemDefinition : public UDataAsset
 
 		UPROPERTY(EditAnywhere, Category = "Item Data")
 		TSoftObjectPtr<UStaticMesh> WorldMesh;
+
+		virtual UItemDefinition* CreateItemCopy() const;
 };
