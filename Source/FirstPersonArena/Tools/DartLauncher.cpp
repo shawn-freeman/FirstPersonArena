@@ -7,7 +7,6 @@
 void ADartLauncher::Use()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Using the dart launcher!"));
-	
 }
 
 // Called every frame
@@ -19,6 +18,7 @@ void ADartLauncher::Tick(float DeltaTime)
 
 void ADartLauncher::BindInputAction(const UInputAction* InputToBind)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("ADartLauncher::BindInputAction"));
 	if (APlayerController* PlayerController = Cast<APlayerController>(OwningCharacter->GetController())) {
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent)) {
 			//Fire

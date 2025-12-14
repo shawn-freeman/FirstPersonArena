@@ -177,12 +177,21 @@ void AAdventureCharacter::AttachTool(UEquippableToolDefinition* ToolDefinition)
 			EquippedTool = ToolToEquip;
 
 			//Get the player controller for this character
-			if (APlayerController* PlayerController = Cast<APlayerController>(Controller)) 
+			if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 			{
-				if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) 
+				if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 				{
-					//The priority here is important. The character's main InputMapping is '0' so this should have a higher priority when it's equipped
-					Subsystem->AddMappingContext(ToolToEquip->ToolMappingContext, 1);
+					// Only add the tool's mapping context if it's valid
+					if (ToolToEquip->ToolMappingContext)
+					{
+						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Tool has ToolMappingContext set!"));
+						//The priority here is important. The character's main InputMapping is '0' so this should have a higher priority when it's equipped
+						Subsystem->AddMappingContext(ToolToEquip->ToolMappingContext, 1);
+					}
+					else
+					{
+						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Tool has no ToolMappingContext set!"));
+					}
 				}
 
 				ToolToEquip->BindInputAction(UseAction);
