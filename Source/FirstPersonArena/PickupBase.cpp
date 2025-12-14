@@ -52,7 +52,20 @@ void APickupBase::InitializePickup()
 		// Retrieve the item data associated with this pickup from the Data Table
 		const FItemData* ItemDataRow = PickupDataTable->FindRow<FItemData>(PickupItemID, PickupItemID.ToString());
 
+		// Check if the row was found
+		if (!ItemDataRow)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Failed to find row '%s' in data table!"), *PickupItemID.ToString()));
+			return;
+		}
+
 		UItemDefinition* TempItemDefinition = ItemDataRow->ItemBase.Get();
+
+		if (!TempItemDefinition)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("ItemBase is null for row '%s'!"), *PickupItemID.ToString()));
+			return;
+		}
 
 		ReferenceItem = TempItemDefinition->CreateItemCopy();
 
