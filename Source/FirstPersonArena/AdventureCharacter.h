@@ -96,4 +96,7 @@ public:
 
 	UFUNCTION()
 	void AttachTool(UEquippableToolDefinition* ToolDefinition);
+
+	UFUNCTION()
+	void GiveItem(UItemDefinition* ItemDefinition);
 };

@@ -191,3 +191,29 @@ void AAdventureCharacter::AttachTool(UEquippableToolDefinition* ToolDefinition)
 		}
 	}
 }
+
+void AAdventureCharacter::GiveItem(UItemDefinition* ItemDefinition)
+{
+	switch (ItemDefinition->ItemType) 
+	{
+	case EItemType::Consumable :
+		//Not Implemented
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Attempting to give the player a consumable item."));
+		break;
+
+	case EItemType::Tool:
+		// If the item is a tool, attempt to cast and attach it to the character
+		UEquippableToolDefinition* ToolDefinition = Cast<UEquippableToolDefinition>(ItemDefinition);
+		if (ToolDefinition != nullptr) 
+		{
+			AttachTool(ToolDefinition);
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cast to tool failed!"));
+		}
+		break;
+	default :
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Item attempted to give player does not match any ENUM type."));
+		break;
+	}
+}

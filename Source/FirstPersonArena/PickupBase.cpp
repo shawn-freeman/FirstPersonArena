@@ -107,6 +107,8 @@ void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 		{
 			GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &APickupBase::InitializePickup, RespawnTime, false, -1);
 		}
+
+		Character->GiveItem(ReferenceItem);
 	}
 }
 
