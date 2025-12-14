@@ -2,6 +2,9 @@
 
 
 #include "AdventureCharacter.h"
+#include "InventoryComponent.h"
+#include "EquippableToolDefinition.h"
+#include "EquippableToolBase.h"
 
 // Sets default values
 AAdventureCharacter::AAdventureCharacter()
@@ -16,6 +19,9 @@ AAdventureCharacter::AAdventureCharacter()
 	// Create a first-person mesh component for the owning player
 	FirstPersonMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
 	check(FirstPersonMeshComponent != nullptr);
+
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	check(InventoryComponent != nullptr);
 
 	// Attach the first-person mesh to the skeletal mesh
 	FirstPersonMeshComponent->SetupAttachment(GetMesh());
@@ -130,3 +136,58 @@ void AAdventureCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+bool AAdventureCharacter::IsToolAlreadyOwned(UEquippableToolDefinition* ToolDefinition)
+{
+	for (UEquippableToolDefinition* InventoryItem: InventoryComponent->ToolInventory)
+	{
+		if (ToolDefinition->ID == InventoryItem->ID) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void AAdventureCharacter::AttachTool(UEquippableToolDefinition* ToolDefinition)
+{
+	// Only equip this tool if it isn't already owned
+	if (!IsToolAlreadyOwned(ToolDefinition))
+	{
+		// Spawn a new instance of the tool to equip
+		AEquippableToolBase* ToolToEquip = GetWorld()->SpawnActor<AEquippableToolBase>(ToolDefinition->ToolAsset, this->GetActorTransform());
+
+		if (ToolToEquip && InventoryComponent)
+		{
+			FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+
+			// Attach the tool to this character, and then the right hand of their first-person mesh
+			//MyActor->AttachToActor(ParentActor, AttachmentRules, OptionalSocketName)
+			ToolToEquip->AttachToActor(this, AttachmentRules);
+			ToolToEquip->AttachToComponent(FirstPersonMeshComponent, AttachmentRules, FName(TEXT("HandGrip_R")));
+			ToolToEquip->AttachToComponent(GetMesh(), AttachmentRules, FName(TEXT("HandGrip_R")));
+
+			ToolToEquip->OwningCharacter = this;
+
+			InventoryComponent->ToolInventory.Add(ToolDefinition);
+
+			//Add the item's animations to the character
+			FirstPersonMeshComponent->SetAnimInstanceClass(ToolToEquip->FirstPersonToolAnim->GeneratedClass);
+			GetMesh()->SetAnimInstanceClass(ToolToEquip->ThirdPersonToolAnim->GeneratedClass);
+			
+			EquippedTool = ToolToEquip;
+
+			//Get the player controller for this character
+			if (APlayerController* PlayerController = Cast<APlayerController>(Controller)) 
+			{
+				if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) 
+				{
+					//The priority here is important. The character's main InputMapping is '0' so this should have a higher priority when it's equipped
+					Subsystem->AddMappingContext(ToolToEquip->ToolMappingContext, 1);
+				}
+
+				ToolToEquip->BindInputAction(UseAction);
+			}
+
+		}
+	}
+}

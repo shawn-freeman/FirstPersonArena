@@ -12,6 +12,9 @@ class UAnimBlueprint;
 class UInputMappingContext;
 class UInputAction;
 class UInputComponent;
+class AEquippableToolBase;
+class UEquippableToolDefinition;
+class UInventoryComponent;
 
 UCLASS()
 class FIRSTPERSONARENA_API AAdventureCharacter : public ACharacter
@@ -40,6 +43,16 @@ protected:
 	// Look Input Actions
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	TObjectPtr<UInputAction> UseAction;
+
+	UPROPERTY(VisibleAnywhere, Category = Inventory)
+	TObjectPtr<UInventoryComponent> InventoryComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Tools)
+	TObjectPtr<AEquippableToolBase> EquippedTool;
+
 
 public:
 	// Called every frame
@@ -77,4 +90,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Animation)
 	UAnimBlueprint* FirstPersonDefaultAnim;
+
+	UFUNCTION()
+	bool IsToolAlreadyOwned(UEquippableToolDefinition* ToolDefinition);
+
+	UFUNCTION()
+	void AttachTool(UEquippableToolDefinition* ToolDefinition);
 };
