@@ -110,7 +110,7 @@ void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 	}
 }
 
-/**
+#if WITH_EDITOR
 /**
 *	Updates this pickup whenever a property is changed.
 *	@param PropertyChangedEvent - contains info about the property that was changed.
@@ -122,12 +122,42 @@ void APickupBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 
 	const FName ChangedPropertyName = PropertyChangedEvent.Property ? PropertyChangedEvent.Property->GetFName() : NAME_None;
 
-	if ((ChangedPropertyName == GET_MEMBER_NAME_CHECKED(APickupBase, PickupItemID) && PickupDataTable) || (ChangedPropertyName == GET_MEMBER_NAME_CHECKED(APickupBase, PickupDataTable) && !PickupItemID.IsNone())) {
-		if (const FItemData* ItemDataRow = PickupDataTable->FindRow<FItemData>(PickupItemID, PickupItemID.ToString())) {
-			UItemDefinition* TempItemDefinition = ItemDataRow->ItemBase;
+	// Check if either PickupItemID or PickupDataTable was changed
+	if ((ChangedPropertyName == GET_MEMBER_NAME_CHECKED(APickupBase, PickupItemID)) ||
+		(ChangedPropertyName == GET_MEMBER_NAME_CHECKED(APickupBase, PickupDataTable)))
+	{
+		// Load the data table if it's set and not loaded yet
+		UDataTable* DataTable = PickupDataTable.LoadSynchronous();
 
-			PickupMeshComponent->SetStaticMesh(TempItemDefinition->WorldMesh.Get());
-			SphereComponent->SetSphereRadius(32.0f);
+		// Only proceed if we have both a valid data table and a valid item ID
+		if (DataTable && !PickupItemID.IsNone())
+		{
+			if (const FItemData* ItemDataRow = DataTable->FindRow<FItemData>(PickupItemID, PickupItemID.ToString()))
+			{
+				UItemDefinition* TempItemDefinition = ItemDataRow->ItemBase.Get();
+
+				if (TempItemDefinition)
+				{
+					// Create a copy of the item definition for this pickup
+					ReferenceItem = TempItemDefinition->CreateItemCopy();
+
+					// Check if the mesh is currently loaded
+					if (TempItemDefinition->WorldMesh.IsValid())
+					{
+						// Set the pickup's mesh to the associated item's mesh
+						PickupMeshComponent->SetStaticMesh(TempItemDefinition->WorldMesh.Get());
+					}
+					else
+					{
+						// If the mesh isn't loaded, load it by calling LoadSynchronous()
+						UStaticMesh* WorldMesh = TempItemDefinition->WorldMesh.LoadSynchronous();
+						PickupMeshComponent->SetStaticMesh(WorldMesh);
+					}
+
+					SphereComponent->SetSphereRadius(32.0f);
+				}
+			}
 		}
 	}
 }
+#endif
