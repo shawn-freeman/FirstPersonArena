@@ -18,11 +18,45 @@ void ADartLauncher::Tick(float DeltaTime)
 
 void ADartLauncher::BindInputAction(const UInputAction* InputToBind)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("ADartLauncher::BindInputAction"));
-	if (APlayerController* PlayerController = Cast<APlayerController>(OwningCharacter->GetController())) {
-		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent)) {
-			//Fire
-			EnhancedInputComponent->BindAction(InputToBind, ETriggerEvent::Triggered, this, &ADartLauncher::Use);
-		}
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("=== DARTLAUNCHER: BindInputAction() called ==="));
+
+	if (!InputToBind)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("DARTLAUNCHER: InputToBind is NULL!"));
+		return;
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("DARTLAUNCHER: InputToBind is valid"));
+
+	if (!OwningCharacter)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("DARTLAUNCHER: OwningCharacter is NULL!"));
+		return;
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("DARTLAUNCHER: OwningCharacter is valid"));
+
+	APlayerController* PlayerController = Cast<APlayerController>(OwningCharacter->GetController());
+	if (!PlayerController)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("DARTLAUNCHER: Failed to get PlayerController from OwningCharacter!"));
+		return;
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("DARTLAUNCHER: PlayerController found"));
+
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
+	if (!EnhancedInputComponent)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("DARTLAUNCHER: Failed to cast to EnhancedInputComponent!"));
+		return;
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("DARTLAUNCHER: EnhancedInputComponent found"));
+
+	// Bind the Use action
+	EnhancedInputComponent->BindAction(InputToBind, ETriggerEvent::Triggered, this, &ADartLauncher::Use);
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("DARTLAUNCHER: UseAction successfully bound to Use() method!"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("=== DARTLAUNCHER: BindInputAction() complete ==="));
 }

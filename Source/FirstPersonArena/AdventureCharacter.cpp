@@ -150,18 +150,23 @@ bool AAdventureCharacter::IsToolAlreadyOwned(UEquippableToolDefinition* ToolDefi
 
 void AAdventureCharacter::AttachTool(UEquippableToolDefinition* ToolDefinition)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("=== ATTACH_TOOL: Starting AttachTool() ==="));
+
 	// Only equip this tool if it isn't already owned
 	if (!IsToolAlreadyOwned(ToolDefinition))
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("ATTACH_TOOL: Tool not already owned, spawning..."));
+
 		// Spawn a new instance of the tool to equip
 		AEquippableToolBase* ToolToEquip = GetWorld()->SpawnActor<AEquippableToolBase>(ToolDefinition->ToolAsset, this->GetActorTransform());
 
 		if (ToolToEquip && InventoryComponent)
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("ATTACH_TOOL: Tool spawned successfully"));
+
 			FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 
 			// Attach the tool to this character, and then the right hand of their first-person mesh
-			//MyActor->AttachToActor(ParentActor, AttachmentRules, OptionalSocketName)
 			ToolToEquip->AttachToActor(this, AttachmentRules);
 			ToolToEquip->AttachToComponent(FirstPersonMeshComponent, AttachmentRules, FName(TEXT("HandGrip_R")));
 			ToolToEquip->AttachToComponent(GetMesh(), AttachmentRules, FName(TEXT("HandGrip_R")));
@@ -169,35 +174,62 @@ void AAdventureCharacter::AttachTool(UEquippableToolDefinition* ToolDefinition)
 			ToolToEquip->OwningCharacter = this;
 
 			InventoryComponent->ToolInventory.Add(ToolDefinition);
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("ATTACH_TOOL: Tool attached to character and added to inventory"));
 
 			//Add the item's animations to the character
 			FirstPersonMeshComponent->SetAnimInstanceClass(ToolToEquip->FirstPersonToolAnim->GeneratedClass);
 			GetMesh()->SetAnimInstanceClass(ToolToEquip->ThirdPersonToolAnim->GeneratedClass);
-			
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("ATTACH_TOOL: Animations set on character meshes"));
+
 			EquippedTool = ToolToEquip;
 
 			//Get the player controller for this character
 			if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("ATTACH_TOOL: PlayerController found"));
+
 				if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("ATTACH_TOOL: EnhancedInputSubsystem found"));
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Magenta, TEXT("INPUT: About to add tool mapping context..."));
+
 					// Only add the tool's mapping context if it's valid
 					if (ToolToEquip->ToolMappingContext)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Tool has ToolMappingContext set!"));
+						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, TEXT("INPUT: Tool has ToolMappingContext set! Adding with priority 1..."));
 						//The priority here is important. The character's main InputMapping is '0' so this should have a higher priority when it's equipped
 						Subsystem->AddMappingContext(ToolToEquip->ToolMappingContext, 1);
+						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, TEXT("INPUT: ToolMappingContext added successfully!"));
 					}
 					else
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Tool has no ToolMappingContext set!"));
+						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("INPUT: Tool has NO ToolMappingContext set!"));
 					}
 				}
+				else
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("ATTACH_TOOL: Failed to get EnhancedInputSubsystem!"));
+				}
 
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("ATTACH_TOOL: Calling BindInputAction..."));
 				ToolToEquip->BindInputAction(UseAction);
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("ATTACH_TOOL: BindInputAction complete"));
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("ATTACH_TOOL: Failed to get PlayerController!"));
 			}
 
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("=== ATTACH_TOOL: Complete ==="));
 		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("ATTACH_TOOL: Failed to spawn tool or InventoryComponent is null!"));
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("ATTACH_TOOL: Tool already owned, skipping..."));
 	}
 }
 
@@ -218,6 +250,7 @@ void AAdventureCharacter::GiveItem(UItemDefinition* ItemDefinition)
 		UEquippableToolDefinition* ToolDefinition = Cast<UEquippableToolDefinition>(ItemDefinition);
 		if (ToolDefinition != nullptr)
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Give Tool Item to player"));
 			AttachTool(ToolDefinition);
 		}
 		else {

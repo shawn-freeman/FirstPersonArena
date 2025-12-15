@@ -100,13 +100,26 @@ void APickupBase::InitializePickup()
 */
 void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Attempting a pickup collision"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, TEXT("=== PICKUP: OnSphereBeginOverlap triggered ==="));
 
 	// Checking if it's an AdventureCharacter overlapping
 	AAdventureCharacter* Character = Cast<AAdventureCharacter>(OtherActor);
 
 	if (Character != nullptr)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, TEXT("PICKUP: Character detected, processing pickup..."));
+
+		// Check if ReferenceItem is valid
+		if (ReferenceItem)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, FString::Printf(TEXT("PICKUP: ReferenceItem is valid. ItemID: %s"), *PickupItemID.ToString()));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("PICKUP: ReferenceItem is NULL! Cannot give item to player."));
+			return;
+		}
+
 		// Unregister from the Overlap Event so it is no longer triggered
 		SphereComponent->OnComponentBeginOverlap.RemoveAll(this);
 
@@ -115,6 +128,8 @@ void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 		PickupMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, TEXT("PICKUP: Calling Character->GiveItem()..."));
+
 		// If the pickup should respawn, wait an fRespawnTime amount of seconds before calling InitializePickup() to respawn it
 		if (bShouldRespawn)
 		{
@@ -122,6 +137,12 @@ void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 
 		Character->GiveItem(ReferenceItem);
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan, TEXT("=== PICKUP: Complete ==="));
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("PICKUP: Not an AdventureCharacter, ignoring..."));
 	}
 }
 
